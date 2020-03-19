@@ -149,12 +149,16 @@ $asset_group_list.each do |group|
       FileUtils.cp(original_img_path, group.group_dir)
       cj_dict['images'].push(item.dict_info)
     else
-      original_img_mtime = File.new(original_img_path).mtime.to_i
-      group_img_mtime = File.new(group_img_path).mtime.to_i
+      f_oi = File.new(original_img_path)
+      f_gi = File.new(group_img_path)
+      original_img_mtime = f_oi.mtime.to_i
+      group_img_mtime = f_gi.mtime.to_i
       if original_img_mtime > group_img_mtime
         FileUtils.rm(group_img_path)
         FileUtils.cp(original_img_path, group.group_dir)
       end
+      f_oi.close
+      f_gi.close
     end
   end
 
