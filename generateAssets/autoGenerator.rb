@@ -21,18 +21,6 @@ class AssetGroup
   def content_json_path
     File.join(group_dir, 'Contents.json')
   end
-
-  def content_json
-    imagesArr = []
-    assets.each do |asset|
-      imagesArr.push(asset.dict_info)
-    end
-    dict = Hash.new
-    dict["images"] = imagesArr
-    dict["info"] = {"version" => 1, "author" => "xcode"}
-
-    return dict.to_json
-  end
 end
 
 class AssetItem
@@ -76,6 +64,8 @@ def is_group_exist(name)
   return nil
 end
 
+#####################Script Start##################### 
+
 if ARGV.length != 2 
   puts "Not Pass enough params!"
   exit
@@ -92,10 +82,6 @@ if File.exist?($assets_path) == false
   puts "Assets Dir #{$assets_path} not exist!"
   exit
 end
-
-#script_path = Pathname.new(__FILE__).realpath.to_s
-#$image_path = script_path[0, script_path.index('/ruby')] + '/UI'
-#$assets_path = script_path[0, script_path.index('/ruby')] + '/AutoAssetDarkMode/Images.xcassets'
 
 $dark_image_pattern = Regexp.new('([\w\s]+)_dark@(\d)x.png')
 $image_pattern = Regexp.new('([\w\s]+)@(\d)x.png')
@@ -134,21 +120,44 @@ for file_name in Dir.children($image_path).sort do
   end
 end
 
-# def write file, contents; return File.write file, contents end
-
 $asset_group_list.each do |group|
-  next if File.exist?(group.group_dir)
-  puts "create group directory #{group.name}"
-  Dir.mkdir(group.group_dir)
-
-  f_cj = File.new(group.content_json_path, 'w+')
-  f_cj.close
-  cj = group.content_json
-  File.write(group.content_json_path, cj)
-
-  group.assets.each do |item|
-    puts item.dict_info.inspect
-    img_path = File.join($image_path, item.img_name)
-    FileUtils.cp(img_path, group.group_dir)
+  if File.exist?(group.group_dir) == false 
+    puts "create group directory #{group.name}"
+    Dir.mkdir(group.group_dir)
   end
+
+  if File.exist?(group.content_json_path) == false 
+    puts "create Contents.json"
+    f_cj = File.new(group.content_json_path, 'w+')
+    f_cj.close
+  end
+
+  if File.size?(group.content_json_path).nil?
+    dict = Hash.new
+    dict['images'] = Array.new
+    dict["info"] = {'version' => 1, 'author' => 'xcode'}
+    File.write(group.content_json_path, JSON.pretty_generate(dict))
+  end
+
+  cj_dict = JSON.parse(File.read(group.content_json_path))
+  cj_img_cnt = cj_dict['images'].length
+  group.assets.each do |item|
+    group_img_path = File.join(group.group_dir, item.img_name)
+    original_img_path = File.join($image_path, item.img_name)
+
+    if File.exist?(group_img_path) == false
+      FileUtils.cp(original_img_path, group.group_dir)
+      cj_dict['images'].push(item.dict_info)
+    else
+      original_img_mtime = File.new(original_img_path).mtime.to_i
+      group_img_mtime = File.new(group_img_path).mtime.to_i
+      if original_img_mtime > group_img_mtime
+        FileUtils.rm(group_img_path)
+        FileUtils.cp(original_img_path, group.group_dir)
+      end
+    end
+  end
+
+  next if cj_img_cnt == cj_dict['images'].length
+  File.write(group.content_json_path, JSON.pretty_generate(cj_dict))
 end
