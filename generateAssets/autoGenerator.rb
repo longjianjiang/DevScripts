@@ -81,6 +81,8 @@ def search_group_from_directory(name)
     ip_matchData = $image_pattern.match(file_name)
 
     if dip_matchData
+      puts "dark #{file_name} match"
+
       dip_match_res = dip_matchData.captures
       file_name = dip_match_res[0]
       scale = dip_match_res[1]
@@ -129,8 +131,8 @@ if File.exist?($assets_path) == false
   exit
 end
 
-$dark_image_pattern = Regexp.new('([\w\.\s]+)_dark@(\d)x.png')
-$image_pattern = Regexp.new('([\w\.\s]+)@(\d)x.png')
+$dark_image_pattern = Regexp.new('([\S\s]+)_dark@(\d)x.png')
+$image_pattern = Regexp.new('([\S\s]+)@(\d)x.png')
 $asset_group_list = []
 
 search_group_from_directory($image_path)
