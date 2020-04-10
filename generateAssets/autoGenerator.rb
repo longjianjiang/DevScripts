@@ -24,9 +24,10 @@ class AssetGroup
 end
 
 class AssetItem
-  attr_accessor :has_appearance, :file_name, :scale
+  attr_accessor :has_appearance, :file_name, :scale, :dir_path
 
-  def initialize(file_name, scale, has_appearance)
+  def initialize(dir_path, file_name, scale, has_appearance)
+    @dir_path = dir_path
     @file_name = file_name
     @scale = scale 
     @has_appearance = has_appearance 
@@ -52,6 +53,10 @@ class AssetItem
     end
     return dict #dict.to_json
   end
+
+  def img_path
+    return File.join(dir_path, img_name)
+  end
 end
 
 def is_group_exist(name)
@@ -62,6 +67,47 @@ def is_group_exist(name)
   end
 
   return nil
+end
+
+def search_group_from_directory(name)
+  for file_name in Dir.children(name).sort do
+    file_full_path = File.join($image_path, file_name)
+    if File.directory?(file_full_path) == true 
+      search_group_from_directory(file_full_path)
+      next
+    end
+
+    dip_matchData = $dark_image_pattern.match(file_name)
+    ip_matchData = $image_pattern.match(file_name)
+
+    if dip_matchData
+      dip_match_res = dip_matchData.captures
+      file_name = dip_match_res[0]
+      scale = dip_match_res[1]
+      group = is_group_exist(file_name)
+      if group.nil?
+        group = AssetGroup.new(file_name)
+        $asset_group_list.push(group)
+      end
+
+      item = AssetItem.new(name, file_name, scale, true)
+      group.assets.push(item)
+    else
+      if ip_matchData
+        ip_match_res = ip_matchData.captures
+        file_name = ip_match_res[0]
+        scale = ip_match_res[1]
+        group = is_group_exist(file_name)
+        if group.nil?
+          group = AssetGroup.new(file_name)
+          $asset_group_list.push(group)
+        end
+
+        item = AssetItem.new(name, file_name, scale, false)
+        group.assets.push(item)
+      end
+    end
+  end
 end
 
 #####################Script Start##################### 
@@ -87,38 +133,7 @@ $dark_image_pattern = Regexp.new('([\w\s]+)_dark@(\d)x.png')
 $image_pattern = Regexp.new('([\w\s]+)@(\d)x.png')
 $asset_group_list = []
 
-for file_name in Dir.children($image_path).sort do
-  dip_matchData = $dark_image_pattern.match(file_name)
-  ip_matchData = $image_pattern.match(file_name)
-
-  if dip_matchData
-    dip_match_res = dip_matchData.captures
-    file_name = dip_match_res[0]
-    scale = dip_match_res[1]
-    group = is_group_exist(file_name)
-    if group.nil?
-      group = AssetGroup.new(file_name)
-      $asset_group_list.push(group)
-    end
-
-    item = AssetItem.new(file_name, scale, true)
-    group.assets.push(item)
-  else
-    if ip_matchData
-      ip_match_res = ip_matchData.captures
-      file_name = ip_match_res[0]
-      scale = ip_match_res[1]
-      group = is_group_exist(file_name)
-      if group.nil?
-        group = AssetGroup.new(file_name)
-        $asset_group_list.push(group)
-      end
-
-      item = AssetItem.new(file_name, scale, false)
-      group.assets.push(item)
-    end
-  end
-end
+search_group_from_directory($image_path)
 
 $asset_group_list.each do |group|
   if File.exist?(group.group_dir) == false 
@@ -143,7 +158,7 @@ $asset_group_list.each do |group|
   cj_img_cnt = cj_dict['images'].length
   group.assets.each do |item|
     group_img_path = File.join(group.group_dir, item.img_name)
-    original_img_path = File.join($image_path, item.img_name)
+    original_img_path = item.img_path
 
     if File.exist?(group_img_path) == false
       FileUtils.cp(original_img_path, group.group_dir)
