@@ -81,8 +81,6 @@ def search_group_from_directory(name)
     ip_matchData = $image_pattern.match(file_name)
 
     if dip_matchData
-      puts "dark #{file_name} match"
-
       dip_match_res = dip_matchData.captures
       file_name = dip_match_res[0]
       scale = dip_match_res[1]
