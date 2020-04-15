@@ -3,7 +3,8 @@ require 'pathname'
 require 'fileutils'
 
 # 1> 按文件名分组（scale和dark）；
-# 2> 新建文件名.imageset 文件夹，移动图片到文件夹，生产Contents.json
+# 2> 新建文件名.imageset 文件夹，移动图片到文件夹，生产Contents.json；
+# 3> 根据最新的UI文件夹中的图片，尝试删除.xcassets中的旧的imageset；
 
 class AssetGroup
   attr_accessor :name, :assets
@@ -24,20 +25,21 @@ class AssetGroup
 end
 
 class AssetItem
-  attr_accessor :has_appearance, :file_name, :scale, :dir_path
+  attr_accessor :has_appearance, :file_name, :scale, :dir_path, :extension_name
 
-  def initialize(dir_path, file_name, scale, has_appearance)
+  def initialize(dir_path, file_name, scale, has_appearance, extension_name)
     @dir_path = dir_path
     @file_name = file_name
     @scale = scale 
     @has_appearance = has_appearance 
+    @extension_name = extension_name
   end
 
   def img_name
     if has_appearance
-      return "#{@file_name}_dark@#{@scale}x.png"
+      return "#{@file_name}_dark@#{@scale}x.#{@extension_name}"
     else
-      return "#{@file_name}@#{@scale}x.png"
+      return "#{@file_name}@#{@scale}x.#{@extension_name}"
     end
   end
 
@@ -69,6 +71,12 @@ def is_group_exist(name)
   return nil
 end
 
+def remove_img_item_in_images_assets(name)
+  if $images_xcassets_items.include?(name) == true
+    $images_xcassets_items.delete(name)
+  end
+end
+
 def search_group_from_directory(name)
   for file_name in Dir.children(name).sort do
     file_full_path = File.join($image_path, file_name)
@@ -84,28 +92,45 @@ def search_group_from_directory(name)
       dip_match_res = dip_matchData.captures
       file_name = dip_match_res[0]
       scale = dip_match_res[1]
+      extension_name = dip_match_res[2]
+
       group = is_group_exist(file_name)
       if group.nil?
         group = AssetGroup.new(file_name)
+        remove_img_item_in_images_assets(group.name)
         $asset_group_list.push(group)
       end
 
-      item = AssetItem.new(name, file_name, scale, true)
+      item = AssetItem.new(name, file_name, scale, true, extension_name)
       group.assets.push(item)
     else
       if ip_matchData
         ip_match_res = ip_matchData.captures
         file_name = ip_match_res[0]
         scale = ip_match_res[1]
+        extension_name = ip_match_res[2]
+
         group = is_group_exist(file_name)
         if group.nil?
           group = AssetGroup.new(file_name)
+          remove_img_item_in_images_assets(group.name)
           $asset_group_list.push(group)
         end
 
-        item = AssetItem.new(name, file_name, scale, false)
+        item = AssetItem.new(name, file_name, scale, false, extension_name)
         group.assets.push(item)
       end
+    end
+  end
+end
+
+def try_remove_old_image_assets
+  for file_name in $images_xcassets_items do
+    full_name = file_name + '.imageset'
+    file_full_path = File.join($assets_path, full_name)
+    if File.directory?(file_full_path) == true
+      puts "remove old imageset #{file_name}"
+      FileUtils.remove_dir(file_full_path)
     end
   end
 end
@@ -129,11 +154,13 @@ if File.exist?($assets_path) == false
   exit
 end
 
-$dark_image_pattern = Regexp.new('([\S\s]+)_dark@(\d)x.png')
-$image_pattern = Regexp.new('([\S\s]+)@(\d)x.png')
+$dark_image_pattern = Regexp.new('([\S\s]+)_dark@(\d)x.(.+)')
+$image_pattern = Regexp.new('([\S\s]+)@(\d)x.(.+)')
 $asset_group_list = []
+$images_xcassets_items = Dir.children($assets_path).map { |file_name| file_name[0...file_name.index('.imageset')] }
 
 search_group_from_directory($image_path)
+try_remove_old_image_assets
 
 $asset_group_list.each do |group|
   if File.exist?(group.group_dir) == false 
