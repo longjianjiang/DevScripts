@@ -84,10 +84,9 @@ end
 puts color_text("Current version is #{current_version}", Color.white)
 puts "Enter new version: "
 new_version = gets.chomp
-if Gem::Version.new(new_version) > Gem::Version.new(current_version)
-  puts "valid version"
-else
-  puts "invalid version"
+if Gem::Version.new(new_version) <= Gem::Version.new(current_version)
+  error_msg = "Error: invalid version."
+  puts color_text(error_msg, Color.red)
   exit
 end
 
