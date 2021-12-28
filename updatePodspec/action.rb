@@ -43,8 +43,8 @@ if git_status_output.length > 0
 end
 
 `git fetch`
-behind_count = `git rev-list --count HEAD..@{u}`
-ahead_count = `git rev-list --count @{u}..HEAD`
+behind_count = `git rev-list --count HEAD..@{u}`.to_i
+ahead_count = `git rev-list --count @{u}..HEAD`.to_i
 if behind_count > 0 or ahead_count > 0
   error_msg = "Error: #{current_branch} is not up to date."
   puts color_text(error_msg, Color.red)
