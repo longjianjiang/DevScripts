@@ -121,4 +121,12 @@ tag_command = "git tag '#{new_version}' "
 `#{commit_command}`
 `#{tag_command}`
 
+remote_name = `git remote`.strip
+if remote_name.length > 0 
+  push_command = "git push #{remote_name} #{current_branch}"
+  push_tag_command = "git push #{remote_name} #{new_version}"
+  `#{push_command}`
+  `#{push_tag_command}`
+end
+
 puts color_text("Success.", Color.green)
