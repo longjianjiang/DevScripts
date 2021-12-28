@@ -84,7 +84,12 @@ end
 puts color_text("Current version is #{current_version}", Color.white)
 puts "Enter new version: "
 new_version = gets.chomp
-## version valid check;
+if Gem::Version.new(new_version) > Gem::Version.new(current_version)
+  puts "valid version"
+else
+  puts "invalid version"
+  exit
+end
 
 # 6
 temp_podspec_file_name = "temp.podspec"
