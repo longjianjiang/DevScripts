@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'Test'
-  s.version          = 0.1.16
+  s.version          = 1.d
   s.email = "xxx"
 end
 
