@@ -42,6 +42,15 @@ if git_status_output.length > 0
   exit
 end
 
+`git fetch`
+behind_count = git rev-list --count HEAD..@{u}
+ahead_count = git rev-list --count @{u}..HEAD
+if behind_count > 0 or ahead_count > 0
+  error_msg = "Error: #{current_branch} is not up to date."
+  puts color_text(error_msg, Color.red)
+  exit
+end
+
 # 3
 accepted_files = [".podspec"]
 podspec_dir = Dir.pwd
