@@ -78,7 +78,7 @@ podspec_file_data.each_line do |line|
     key = key_value.first.to_s.gsub("\n", '').gsub(' ','').gsub("\t",'')
     if key == "s.version"
       value = key_value.last.to_s.gsub("\n", '').gsub(' ','').gsub("\t",'')
-      current_version = value
+      current_version = value.gsub("'", '')
       break
     end
   end
@@ -93,9 +93,6 @@ end
 puts color_text("Current version is #{current_version}", Color.white)
 puts "Enter new version: "
 new_version = gets.chomp
-
-puts current_version.inspect
-puts new_version.inspect
 
 if Gem::Version.new(new_version) <= Gem::Version.new(current_version)
   error_msg = "Error: invalid version."
@@ -114,7 +111,7 @@ begin
         original_key = key_value.first.to_s
         key = key_value.first.to_s.gsub("\n", '').gsub(' ','').gsub("\t",'')
         if key == "s.version"
-          to_write_line = original_key + "= #{new_version}"
+          to_write_line = original_key + "= '#{new_version}'"
         end
       end
 
