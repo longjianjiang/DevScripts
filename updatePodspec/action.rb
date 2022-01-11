@@ -67,7 +67,6 @@ end
 
 # 3
 accepted_files = [".podspec"]
-podspec_dir = Dir.pwd
 podspec_file_name = ""
 for file_name in Dir.children(podspec_dir) do
   if accepted_files.include?(File.extname(file_name)) 
