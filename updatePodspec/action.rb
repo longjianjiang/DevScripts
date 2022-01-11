@@ -25,9 +25,9 @@ def color_text(text, color = Color.natural)
     return "\033[#{color}m#{text}\033[0m"
 end
 
-def move_human(game)
+def move_human()
   puts "Enter new version: "
-  @move = $stdin.gets.chomp
+  $move = $stdin.gets.chomp
 end
 
 # 0
@@ -109,7 +109,8 @@ end
 
 # 5
 puts color_text("Current version is #{current_version}", Color.white)
-new_version = @move 
+move_human()
+new_version = $move 
 
 if Gem::Version.new(new_version) <= Gem::Version.new(current_version)
   error_msg = "Error: invalid version."
