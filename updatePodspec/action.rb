@@ -25,6 +25,11 @@ def color_text(text, color = Color.natural)
     return "\033[#{color}m#{text}\033[0m"
 end
 
+def move_human(game)
+  puts "Enter new version: "
+  @move = $stdin.gets.chomp
+end
+
 # 0
 if ARGV.length != 1
   error_msg = "Error: Not pass file path."
@@ -104,8 +109,7 @@ end
 
 # 5
 puts color_text("Current version is #{current_version}", Color.white)
-puts "Enter new version: "
-new_version = gets.chomp
+new_version = @move 
 
 if Gem::Version.new(new_version) <= Gem::Version.new(current_version)
   error_msg = "Error: invalid version."
