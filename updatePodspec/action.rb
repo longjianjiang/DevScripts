@@ -144,6 +144,7 @@ end
 podspec_file.close
 
 # 7
+Dir.chdir(podspec_dir)
 add_command = "git add #{podspec_file_name}"
 commit_msg = "new version #{new_version}"
 commit_command = "git commit -m '#{commit_msg}'"
