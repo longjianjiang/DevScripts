@@ -25,6 +25,20 @@ def color_text(text, color = Color.natural)
     return "\033[#{color}m#{text}\033[0m"
 end
 
+# 0
+if ARGV.length != 1
+  error_msg = "Error: Not pass file path."
+  puts color_text(error_msg, Color.red)
+  exit
+end
+
+podspec_dir = ARGV[0]
+if File.exist?(podspec_dir) == false
+  error_msg = "Error: File path #{podspec_dir} not exist."
+  puts color_text(error_msg, Color.red)
+  exit
+end
+
 # 1
 current_branch = `git rev-parse --abbrev-ref HEAD`.strip
 target_branchs = ["master", "main"]
