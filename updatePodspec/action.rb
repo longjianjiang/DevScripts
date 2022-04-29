@@ -45,6 +45,7 @@ if File.exist?(podspec_dir) == false
 end
 
 # 1
+Dir.chdir(podspec_dir)
 current_branch = `git rev-parse --abbrev-ref HEAD`.strip
 target_branchs = ["master", "main"]
 if target_branchs.include?(current_branch) == false
@@ -144,7 +145,6 @@ end
 podspec_file.close
 
 # 7
-Dir.chdir(podspec_dir)
 add_command = "git add #{podspec_file_name}"
 commit_msg = "new version #{new_version}"
 commit_command = "git commit -m '#{commit_msg}'"
