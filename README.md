@@ -1,14 +1,14 @@
 # DevScripts
 
-- generateAPIManagers
+## generateAPIManagers
 
 Create apimanager header file and source file, add them to xcode projet with [Xcodeproj](https://github.com/CocoaPods/Xcodeproj).
 
-- generateAssets
+## generateAssets
 
 Move images to a folder, add scripts at build phase, automatically udpate xcassets.
 
-- updatePodspec
+##  updatePodspec
 
 Update podspec version, commit, add tag, push origin.
 
