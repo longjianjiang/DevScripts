@@ -2,7 +2,7 @@
 
 ## generateAPIManagers
 
-Create apimanager header file and source file, add them to xcode projet with [Xcodeproj](https://github.com/CocoaPods/Xcodeproj).
+Create apimanager header file and source file, add them to xcode project with [Xcodeproj](https://github.com/CocoaPods/Xcodeproj).
 
 ## generateAssets
 
