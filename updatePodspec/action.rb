@@ -25,9 +25,14 @@ def color_text(text, color = Color.natural)
     return "\033[#{color}m#{text}\033[0m"
 end
 
-def move_human()
+def enter_pod_new_version()
   puts "Enter new version: "
-  $move = $stdin.gets.chomp
+  $pod_new_version = $stdin.gets.chomp
+end
+
+def enter_app_version()
+  puts "Enter app version: "
+  $app_version = $stdin.gets.chomp
 end
 
 # 0
@@ -110,8 +115,10 @@ end
 
 # 5
 puts color_text("Current version is #{current_version}", Color.white)
-move_human()
-new_version = $move 
+enter_pod_new_version()
+new_version = $pod_new_version
+enter_app_version()
+app_version = $app_version
 
 if Gem::Version.new(new_version) <= Gem::Version.new(current_version)
   error_msg = "Error: invalid version."
@@ -146,7 +153,7 @@ podspec_file.close
 
 # 7
 add_command = "git add #{podspec_file_name}"
-commit_msg = "new version #{new_version}"
+commit_msg = "new version #{new_version} for #{app_version}"
 commit_command = "git commit -m '#{commit_msg}'"
 tag_command = "git tag '#{new_version}' "
 
